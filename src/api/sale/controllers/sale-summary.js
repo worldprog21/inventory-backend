@@ -103,4 +103,46 @@ module.exports = {
 
     return { data: summaries };
   },
+
+  async getChartsData(ctx) {
+    try {
+      const now = new Date();
+      // Get the first day of the current month
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      // Get the last day of the current month
+      const endOfMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999
+      );
+      // now.getFullYear() → current year (e.g., 2025)
+      // now.getMonth() + 1 → next month (e.g., May is 4, so +1 gives 5 → June)
+      // 0 → zero-th day of next month = last day of current month
+      // 23, 59, 59, 999 → sets the time to 11:59:59.999 PM
+      // In JavaScript, new Date(2025, 5, 0) means:
+      // "Go to June 0th, 2025", which JavaScript interprets as May 31st, 2025.
+      // So this gives you the very end of the current month.
+
+      const sales = await strapi.entityService.findMany("api::sale.sale", {
+        filters: {
+          date: {
+            $gte: startOfMonth.toISOString(),
+            $lte: endOfMonth.toISOString(),
+          },
+        },
+        fields: ["date", "total"],
+        pagination: { limit: -1 }, // limit: -1 disables pagination
+        sort: ["date:asc"],
+      });
+
+      ctx.body = sales;
+    } catch (error) {
+      console.error("Error in getSummary:", error);
+      return ctx.throw(500, "An error occurred while fetching sales data");
+    }
+  },
 };

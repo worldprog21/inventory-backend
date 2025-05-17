@@ -18,5 +18,14 @@ module.exports = {
         middlewares: [],
       },
     },
+    {
+      method: "GET",
+      path: "/sales/chartData/",
+      handler: "sale-summary.getChartsData",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };
